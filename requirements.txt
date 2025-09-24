@@ -1,0 +1,6 @@
+beautifulsoup4==4.12.3
+requests==2.32.3
+python-dateutil==2.9.0.post0
+tqdm==4.66.5
+supabase==2.6.0
+python-dotenv==1.0.1

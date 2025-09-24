@@ -1,0 +1,245 @@
+Status,DIN URL,DIN,Company,Product,Class,PM See footnote1,Schedule,# See footnote2,A.I. name See footnote3,Strength,Current status date,Original market date,Address,City,state,Country,Zipcode,Number of active ingredient(s),Biosimilar Biologic Drug,American Hospital Formulary Service (AHFS),Anatomical Therapeutic Chemical (ATC),Active ingredient group (AIG) number,Labelling,Product Monograph/Veterinary Date,List of active ingredient,Dosage form,Route(s) of administration,DIN_link_formula
+Dormant,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=18029,02023709,PHARMA STULLN INC.,BALANCED SALT SOLUTION,Human,No,Ethical,6,CALCIUM CHLORIDE,0.48 MG / ML,2019-09-30,1994-12-31,"6500 Trans Canada Highway, Suite 400",Pointe-Claire,Quebec,Canada,H9R 0A5,6,No,40:36.00,B05CB10 COMBINATIONS,0600055001,,,"CALCIUM CHLORIDE : 0.48 MG / ML
+MAGNESIUM CHLORIDE : 0.3 MG / ML
+POTASSIUM CHLORIDE : 0.75 MG / ML
+SODIUM ACETATE : 3.9 MG / ML
+SODIUM CHLORIDE : 6.4 MG / ML
+SODIUM CITRATE : 1.7 MG / ML",Solution,Irrigation,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=18029"",""02023709"")"
+Cancelled Post Market,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=14114,02008580,3 WAY HERBS LTD.,#17 DIURETIC TEA,Human,No,NON-PRESCRIPTION DRUGS,9,FENNEL,136 MG / 5 ML,2001-08-03,1993-12-31,Castlegar,British Columbia,Canada,V1N 3H4,,9,No,"92:01.00* 
+ See footnote 6",,0924050001,,,"COUCH GRASS : 136 MG / 5 ML
+FENNEL : 136 MG / 5 ML
+GOOSE GRASS : 136 MG / 5 ML
+JUNIPER BERRIES : 136 MG / 5 ML
+PARSLEY : 136 MG / 5 ML
+SHEPHERDS PURSE : 136 MG / 5 ML
+TARAXACUM OFFICINALE WEBER : 136 MG / 5 ML
+UVA URSI : 136 MG / 5 ML
+ZEA MAYS : 136 MG / 5 ML",Tea (Herbal),Oral,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=14114"",""02008580"")"
+Cancelled Post Market,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=14096,01996878,3 WAY HERBS LTD.,#7 NERVE TEA,Human,No,NON-PRESCRIPTION DRUGS,9,CHAMOMILE,16 %,2001-08-03,1993-12-31,Castlegar,British Columbia,Canada,V1N 3H4,,9,No,"92:01.00* 
+ See footnote 6",,0948751001,,,"CHAMOMILE : 16 %
+HOPS : 4 %
+MOTHERWORT COMMON : 10 %
+MUGWORT : 8 %
+PASSION FLOWER : 16 %
+ROSMARINUS OFFICINALIS : 4 %
+SCULLCAP : 4 %
+VALERIAN : 8 %
+VERBENA OFFICINALIS : 8 %",Tea (Herbal),Oral,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=14096"",""01996878"")"
+Marketed,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=3132,00438014,BAXTER CORPORATION,(20 MMOL/L) POTASSIUM CHLORIDE IN 3.3% DEXTROSE AND 0.3% SODIUM CHLORIDE INJECTION USP,Human,Yes,Ethical,3,DEXTROSE,3.3 G / 100 ML,2013-01-21,1978-12-31,7125 Mississauga Road,Mississauga,Ontario,Canada,L5N 0C2,3,No,"40:12.00 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 40:20.00",B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0300097026,https://pdf.hres.ca/dpd_pm/00034399.PDF,2016-04-07,"DEXTROSE : 3.3 G / 100 ML
+POTASSIUM CHLORIDE : 150 MG / 100 ML
+SODIUM CHLORIDE : 300 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=3132"",""00438014"")"
+Marketed,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=10866,00786292,BAXTER CORPORATION,(20 MMOL/L) POTASSIUM CHLORIDE IN 5% DEXTROSE AND 0.9% SODIUM CHLORIDE INJECTION USP,Human,Yes,Ethical,3,DEXTROSE,5 G / 100 ML,2013-01-21,1990-12-31,7125 Mississauga Road,Mississauga,Ontario,Canada,L5N 0C2,3,No,"40:20.00 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 40:12.00",B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0300097006,https://pdf.hres.ca/dpd_pm/00034399.PDF,2016-04-07,"DEXTROSE : 5 G / 100 ML
+POTASSIUM CHLORIDE : 150 MG / 100 ML
+SODIUM CHLORIDE : 900 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=10866"",""00786292"")"
+Marketed,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=10041,00438049,BAXTER CORPORATION,(20 MMOL/L) POTASSIUM CHLORIDE IN 5% DEXTROSE INJECTION USP,Human,Yes,Ethical,2,DEXTROSE,5 G / 100 ML,2013-01-21,1989-12-31,7125 Mississauga Road,Mississauga,Ontario,Canada,L5N 0C2,2,No,"40:12.00 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 40:20.00",B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0200305001,https://pdf.hres.ca/dpd_pm/00061808.PDF,2021-03-11,"DEXTROSE : 5 G / 100 ML
+POTASSIUM CHLORIDE : 150 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=10041"",""00438049"")"
+Marketed,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=9826,00786209,BAXTER CORPORATION,(20MMOL/L) POTASSIUM CHLORIDE IN 0.9% SODIUM CHLORIDE INJECTION USP,Human,Yes,Ethical,2,SODIUM CHLORIDE,900 MG / 100 ML,2013-01-29,1989-12-31,7125 Mississauga Road,Mississauga,Ontario,Canada,L5N 0C2,2,No,40:12.00,B05BB01 ELECTROLYTES,0213340001,https://pdf.hres.ca/dpd_pm/00049126.PDF,2018-12-10,"POTASSIUM CHLORIDE : 150 MG / 100 ML
+SODIUM CHLORIDE : 900 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=9826"",""00786209"")"
+Cancelled Post Market,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=10043,00503142,BAXTER CORPORATION,(20MMOL/L) POTASSIUM CHLORIDE IN 5% DEXTROSE AND 0.2% SODIUM CHLORIDE INJECTION USP,Human,Yes,Ethical,3,DEXTROSE,5 G / 100 ML,2016-07-15,1989-12-31,7125 Mississauga Road,Mississauga,Ontario,Canada,L5N 0C2,3,No,40:12.00,B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0300097004,https://pdf.hres.ca/dpd_pm/00034399.PDF,2016-04-07,"DEXTROSE : 5 G / 100 ML
+POTASSIUM CHLORIDE : 150 MG / 100 ML
+SODIUM CHLORIDE : 200 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=10043"",""00503142"")"
+Marketed,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=10044,00437999,BAXTER CORPORATION,(20MMOL/L) POTASSIUM CHLORIDE IN 5% DEXTROSE AND 0.45% SODIUM CHLORIDE INJECTION USP,Human,Yes,Ethical,3,DEXTROSE,5 G / 100 ML,2013-01-21,1989-12-31,7125 Mississauga Road,Mississauga,Ontario,Canada,L5N 0C2,3,No,"40:20.00 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 40:12.00",B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0300097005,https://pdf.hres.ca/dpd_pm/00034399.PDF,2016-04-07,"DEXTROSE : 5 G / 100 ML
+POTASSIUM CHLORIDE : 150 MG / 100 ML
+SODIUM CHLORIDE : 450 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=10044"",""00437999"")"
+Marketed,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=9827,00786217,BAXTER CORPORATION,(40 MMOL/L) POTASSIUM CHLORIDE IN 0.9% SODIUM CHLORIDE INJECTION USP,Human,Yes,Ethical,2,SODIUM CHLORIDE,900 MG / 100 ML,2013-01-21,1989-12-31,7125 Mississauga Road,Mississauga,Ontario,Canada,L5N 0C2,2,No,40:12.00,B05BB01 ELECTROLYTES,0213340002,https://pdf.hres.ca/dpd_pm/00049126.PDF,2018-12-10,"POTASSIUM CHLORIDE : 300 MG / 100 ML
+SODIUM CHLORIDE : 900 MG / 100 ML",Liquid,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=9827"",""00786217"")"
+Marketed,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=10042,00438030,BAXTER CORPORATION,(40 MMOL/L) POTASSIUM CHLORIDE IN 5% DEXTROSE INJECTION USP,Human,Yes,Ethical,2,DEXTROSE,5 G / 100 ML,2013-01-21,1989-12-31,7125 Mississauga Road,Mississauga,Ontario,Canada,L5N 0C2,2,No,"40:12.00 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 40:20.00",B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0200305003,https://pdf.hres.ca/dpd_pm/00061808.PDF,2021-03-11,"DEXTROSE : 5 G / 100 ML
+POTASSIUM CHLORIDE : 300 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=10042"",""00438030"")"
+Cancelled Post Market,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=70277,02246134,BAXTER CORPORATION,(40 MMOLS/L) POTASSIUM CHLORIDE IN LACTATED RINGER'S INJECTION USP,Human,No,Ethical,4,SODIUM CHLORIDE,600 MG / 100 ML,2016-07-15,2002-12-11,7125 Mississauga Road,Mississauga,Ontario,Canada,L5N 0C2,4,No,40:12.00,B05BB01 ELECTROLYTES,0400132004,,,"CALCIUM CHLORIDE : 20 MG / 100 ML
+POTASSIUM CHLORIDE : 328 MG / 100 ML
+SODIUM CHLORIDE : 600 MG / 100 ML
+SODIUM LACTATE : 310 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=70277"",""02246134"")"
+Marketed,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=3133,00438022,BAXTER CORPORATION,(40MMOL/L) POTASSIUM CHLORIDE IN 3.3% DEXTROSE AND 0.3% SODIUM CHLORIDE INJECTION USP,Human,Yes,Ethical,3,DEXTROSE,3.3 G / 100 ML,2013-01-21,1978-12-31,7125 Mississauga Road,Mississauga,Ontario,Canada,L5N 0C2,3,No,"40:12.00 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 40:20.00",B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0300097002,https://pdf.hres.ca/dpd_pm/00034399.PDF,2016-04-07,"DEXTROSE : 3.3 G / 100 ML
+POTASSIUM CHLORIDE : 300 MG / 100 ML
+SODIUM CHLORIDE : 300 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=3133"",""00438022"")"
+Marketed,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=10045,00438006,BAXTER CORPORATION,(40MMOL/L)POTASSIUM CHLORIDE IN 5% DEXTROSE AND 0.45% SODIUM CHLORIDE INJECTION USP,Human,Yes,Ethical,3,DEXTROSE,5 G / 100 ML,2013-01-20,1989-12-31,7125 Mississauga Road,Mississauga,Ontario,Canada,L5N 0C2,3,No,"40:12.00 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 40:20.00",B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0300097003,https://pdf.hres.ca/dpd_pm/00034399.PDF,2016-04-07,"DEXTROSE : 5 G / 100 ML
+POTASSIUM CHLORIDE : 300 MG / 100 ML
+SODIUM CHLORIDE : 450 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=10045"",""00438006"")"
+Cancelled Post Market,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=60161,02236871,"STANLEY PHARMACEUTICALS, A DIVISION OF VITA HEALTH PRODUCTS INC.","(EXTRA STRENGTH) ACETAMINOPHEN, CAFFEINE & 8MG CODEINE PHOSPHATE CAPLETS",Human,No,NARCOTICS (CDSA I),3,ACETAMINOPHEN,500 MG,2002-07-31,1998-07-22,150 Beghin Avenue,Winnipeg,Manitoba,Canada,R2J 3W2,3,No,"28:08.92 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 28:08.08",N02AJ06 CODEINE AND PARACETAMOL,0311391004,,,"ACETAMINOPHEN : 500 MG
+CAFFEINE : 15 MG
+CODEINE PHOSPHATE : 8 MG",Tablet,Oral,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=60161"",""02236871"")"
+Cancelled Post Market,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=13034,01931741,B. BRAUN MEDICAL INC,0.15% POTASSIUM CHLORIDE IN 3.3% DEXTROSE AND 0.30% SODIUM CHLORIDE INJECTION,Human,No,Ethical,3,DEXTROSE,3.3 G / 100 ML,2022-06-03,1992-12-31,824 Twelfth Avenue,Bethlehem,Pennsylvania,United States,18018,3,No,"40:20.00 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 40:12.00",B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0300097001,,,"DEXTROSE : 3.3 G / 100 ML
+POTASSIUM CHLORIDE : 150 MG / 100 ML
+SODIUM CHLORIDE : 300 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=13034"",""01931741"")"
+Marketed,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=21753,01931598,B. BRAUN MEDICAL INC,0.15% POTASSIUM CHLORIDE IN 5% DEXTROSE AND 0.20% SODIUM CHLORIDE INJECTION USP,Human,No,Ethical,3,DEXTROSE,5 G / 100 ML,1998-10-01,1998-09-03,824 Twelfth Avenue,Bethlehem,Pennsylvania,United States,18018,3,No,"40:12.00 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 40:20.00",B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0300097004,,,"DEXTROSE : 5 G / 100 ML
+POTASSIUM CHLORIDE : 150 MG / 100 ML
+SODIUM CHLORIDE : 200 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=21753"",""01931598"")"
+Cancelled Post Market,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=21754,01931601,B. BRAUN MEDICAL INC,0.15% POTASSIUM CHLORIDE IN 5% DEXTROSE AND 0.33% SODIUM CHLORIDE INJECTION USP,Human,No,Ethical,3,DEXTROSE,5 G / 100 ML,2018-07-23,1998-09-03,824 Twelfth Avenue,Bethlehem,Pennsylvania,United States,18018,3,No,"40:12.00 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 40:20.00",B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0300097022,,,"DEXTROSE : 5 G / 100 ML
+POTASSIUM CHLORIDE : 150 MG / 100 ML
+SODIUM CHLORIDE : 330 MG / 100 ML",Liquid,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=21754"",""01931601"")"
+Cancelled Post Market,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=18991,01931547,B. BRAUN MEDICAL INC,0.15% POTASSIUM CHLORIDE IN 5% DEXTROSE AND 0.45% SODIUM CHLORIDE INJECTION,Human,No,Ethical,3,DEXTROSE,5 G / 100 ML,2023-03-19,1995-12-31,824 Twelfth Avenue,Bethlehem,Pennsylvania,United States,18018,3,No,"40:20.00 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 40:12.00",B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0300097005,,,"DEXTROSE : 5 G / 100 ML
+POTASSIUM CHLORIDE : 150 MG / 100 ML
+SODIUM CHLORIDE : 450 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=18991"",""01931547"")"
+Cancelled Post Market,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=21755,01931644,B. BRAUN MEDICAL INC,0.15% POTASSIUM CHLORIDE IN 5% DEXTROSE AND 0.9% SODIUM CHLORIDE INJECTION,Human,No,Ethical,3,DEXTROSE,5 G / 100 ML,2023-03-19,1996-09-10,824 Twelfth Avenue,Bethlehem,Pennsylvania,United States,18018,3,No,"40:12.00 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 40:20.00",B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0300097006,,,"DEXTROSE : 5 G / 100 ML
+POTASSIUM CHLORIDE : 150 MG / 100 ML
+SODIUM CHLORIDE : 900 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=21755"",""01931644"")"
+Cancelled Post Market,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=21713,01931539,B. BRAUN MEDICAL INC,0.15% POTASSIUM CHLORIDE IN 5% DEXTROSE INJECTION USP,Human,No,Ethical,2,DEXTROSE,5 G / 100 ML,2023-03-19,1996-09-10,824 Twelfth Avenue,Bethlehem,Pennsylvania,United States,18018,2,No,"40:20.00 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 40:12.00",B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0200305001,,,"DEXTROSE : 5 G / 100 ML
+POTASSIUM CHLORIDE : 150 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=21713"",""01931539"")"
+Cancelled Post Market,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=19134,02117428,PDT IMAGE INC. DBA PRO-DENTEC CANADA,0.2% SODIUM FLUORIDE WEEKLY ORAL RINSE,Human,No,NON-PRESCRIPTION DRUGS,1,SODIUM FLUORIDE,0.2 %,2009-06-15,1995-12-31,UNIT 101,1 Valleywood Dr.,Markham,Ontario,Canada,1,No,34:00.00,A01AA01 SODIUM FLUORIDE,0107147012,,,SODIUM FLUORIDE : 0.2 %,Solution,Dental,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=19134"",""02117428"")"
+Cancelled Post Market,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=23494,01967770,B. BRAUN MEDICAL INC,0.30% POTASSIUM CHLORIDE IN 5% DEXTROSE,Human,No,Ethical,2,DEXTROSE,5 G / 100 ML,2017-07-15,1998-09-03,824 Twelfth Avenue,Bethlehem,Pennsylvania,United States,18018,2,No,"40:20.00 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 40:12.00",B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0200305003,,,"DEXTROSE : 5 G / 100 ML
+POTASSIUM CHLORIDE : 300 MG / 100 ML",Liquid,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=23494"",""01967770"")"
+Cancelled Post Market,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=21752,01931571,B. BRAUN MEDICAL INC,0.30% POTASSIUM CHLORIDE IN 5% DEXTROSE AND 0.45% SODIUM CHLORIDE INJECTION,Human,No,Ethical,3,DEXTROSE,5 G / 100 ML,2023-03-19,1998-03-08,824 Twelfth Avenue,Bethlehem,Pennsylvania,United States,18018,3,No,"40:12.00 
+ 
+ 
+ 
+ , 
+ 
+ 
+ 
+ 
+ 
+ 40:20.00",B05BB02 ELECTROLYTES WITH CARBOHYDRATES,0300097003,,,"DEXTROSE : 5 G / 100 ML
+POTASSIUM CHLORIDE : 300 MG / 100 ML
+SODIUM CHLORIDE : 450 MG / 100 ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=21752"",""01931571"")"
+Marketed,https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=10519,00828602,BAXTER CORPORATION,0.4% LIDOCAINE HYDROCHLORIDE AND 5% DEXTROSE INJECTION,Human,Yes,Ethical,2,LIDOCAINE HYDROCHLORIDE,4 MG / ML,2019-12-20,1990-12-31,7125 Mississauga Road,Mississauga,Ontario,Canada,L5N 0C2,2,No,24:04.04.08,C01BB01 LIDOCAINE,0201281001,https://pdf.hres.ca/dpd_pm/00081137.PDF,2025-07-21,"DEXTROSE : 50 MG / ML
+LIDOCAINE HYDROCHLORIDE : 4 MG / ML",Solution,Intravenous,"=HYPERLINK(""https://health-products.canada.ca/dpd-bdpp/info?lang=eng&code=10519"",""00828602"")"
