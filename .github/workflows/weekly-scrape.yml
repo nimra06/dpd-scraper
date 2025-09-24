@@ -1,30 +1,61 @@
-name: Weekly DPD Scrape
+name: Weekly DPD scrape
 
 on:
   schedule:
-    - cron: "0 6 * * 1"  # Mon 06:00 UTC
-  workflow_dispatch:
+    - cron: "0 6 * * 1"        # every Monday 06:00 UTC (adjust as you like)
+  workflow_dispatch: {}        # manual trigger
+
+concurrency:
+  group: weekly-dpd
+  cancel-in-progress: false
 
 jobs:
-  run:
+  run-scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 360
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
+
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - name: Run weekly job
+
+      - name: Run weekly job (prod settings)
         env:
+          # Supabase
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          SCRAPER_MAX_DEPTH: "3"
-          SCRAPER_TARGET_MIN_ROWS: "50000"
-          SCRAPER_ENRICH_FLUSH_EVERY: "50"
-          SCRAPER_REQUEST_SLEEP: "0.03"
+
+          ARTIFACT_DIR: artifacts
+
+          WEEKLY_RETURN_ROWS: "0"          # DB mode (not artifacts-only)
+          SCRAPER_MAX_ROWS: "0"            # 0 = no cap (pull ~58k)
+          SCRAPER_TARGET_MIN_ROWS: "59000" 
+          SCRAPER_TIMEOUT: "45"
+          SCRAPER_RETRIES: "3"
+          SCRAPER_REQUEST_SLEEP: "0.05"
+
+          SCRAPER_FORCE_POST_SWEEPS: "0"   
+          SCRAPER_SWEEP_ORDER: "brand-first"
+          SCRAPER_SWEEP_PAGE_LIMIT: "1"
+          SCRAPER_SWEEP_MAX_EMPTY: "0"
+          SCRAPER_DEBUG_VERBOSE: "1"
+          SCRAPER_LOG_EVERY_ADDED: "500"
         run: |
           python -m scripts.run_weekly_job
+
+      - name: Upload artifacts (xlsx/json/csv)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dpd-snapshot
+          path: artifacts/**/*
