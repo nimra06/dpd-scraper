@@ -22,6 +22,5 @@ def upload_xlsx(xlsx_path: str) -> str:
                 "x-upsert": "true",
             },
         )
-    # If bucket is public, you can build a public URL; else sign it server-side
     public_base = os.environ.get("SUPABASE_PUBLIC_STORAGE_URL")  # optional pre-configured CDN URL
     return f"{public_base}/{SUPABASE_BUCKET}/{key}" if public_base else key
