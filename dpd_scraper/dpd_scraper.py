@@ -747,6 +747,7 @@ def collect_all_list_rows(
     """
     import html as _html
     import re as _re
+    preferred_post_url = (post_endpoint_url or DISPATCH_URL or "").strip()
 
     if preferred_post_url.endswith("/dispatch-repartition"):
         dbg("[SWEEP] preferred_post_url pointed at dispatch-repartition (GET-only); switching to /dpd-bdpp/search-recherche")
