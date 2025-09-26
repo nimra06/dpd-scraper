@@ -1,18 +1,21 @@
-# dpd_scraper/orchestrator.py
 import os, time, datetime as dt
+import pandas as pd
+
 from .supabase_io import load_baseline, write_run, stage_changes, upload_styled_xlsx
 from .diffing import compute_diff
 from dpd_scraper.dpd_scraper import (
-    run_full_scrape, DEF_REQUEST_SLEEP, DEF_MAX_DEPTH, DEF_TARGET_MIN_ROWS, DETAIL_COLS
+    run_full_scrape,
+    DEF_REQUEST_SLEEP, DEF_MAX_DEPTH, DEF_TARGET_MIN_ROWS, DETAIL_COLS,
 )
-from dpd_scraper.excel import save_styled_excel  # if you put helper there; adjust import to where it lives
-import pandas as pd
+# If you moved the Excel helper elsewhere, adjust import:
+
+from dpd_scraper.dpd_scraper import save_styled_excel  # uses the one from scraper module
 
 REQUEST_SLEEP = DEF_REQUEST_SLEEP
 MAX_DEPTH     = DEF_MAX_DEPTH
 TARGET_MIN_ROWS = DEF_TARGET_MIN_ROWS
-ENRICH_FLUSH_EVERY = 50
-SCRAPER_MAX_ROWS = int(os.getenv("SCRAPER_MAX_ROWS", "0"))
+ENRICH_FLUSH_EVERY = int(os.getenv("SCRAPER_ENRICH_FLUSH_EVERY", "50"))
+SCRAPER_MAX_ROWS   = int(os.getenv("SCRAPER_MAX_ROWS", "0"))
 
 def weekly_job(return_rows: bool = False):
     started = time.time()
@@ -25,7 +28,7 @@ def weekly_job(return_rows: bool = False):
         max_rows=SCRAPER_MAX_ROWS,
     )
 
-    # Always put ordered columns into meta so downstream knows
+    # Always include ordered columns in meta (downstream expects this)
     meta["columns_order"] = DETAIL_COLS
 
     if return_rows:
@@ -40,7 +43,7 @@ def weekly_job(return_rows: bool = False):
             "columns_order": DETAIL_COLS,
         }
 
-    # build local styled xlsx
+    # Local styled XLSX artifact
     out_dir = os.getenv("ARTIFACT_DIR", "artifacts")
     ts = time.strftime("%Y%m%d_%H%M%S")
     os.makedirs(os.path.join(out_dir, ts), exist_ok=True)
@@ -48,15 +51,22 @@ def weekly_job(return_rows: bool = False):
     df = pd.DataFrame(rows, columns=DETAIL_COLS)
     save_styled_excel(df, xlsx_path)
 
-    # upload to storage (create bucket if needed)
+    # Upload xlsx to Storage (best-effort)
     xlsx_url = None
     try:
         xlsx_url = upload_styled_xlsx(xlsx_path)
     except Exception as e:
         print("[weekly_job] XLSX upload failed:", repr(e))
 
-    run_id = write_run(rows, meta, label=f"weekly-{dt.datetime.utcnow().strftime('%Y%m%d-%H%M%S')}", xlsx_url=xlsx_url)
+    # Write run (resilient to schema diffs)
+    run_id = write_run(
+        rows=rows,
+        meta=meta,
+        label=f"weekly-{dt.datetime.utcnow().strftime('%Y%m%d-%H%M%S')}",
+        xlsx_url=xlsx_url,
+    )
 
+    # Diff vs baseline and stage changes
     baseline = load_baseline()
     added, removed, modified = compute_diff(rows, baseline)
     stage_changes(run_id, added, removed, modified)
