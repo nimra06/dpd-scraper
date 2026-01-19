@@ -103,24 +103,24 @@ def map_inspection_to_nexara_format(record: Dict) -> Dict[str, Optional[str]]:
         "List of active ingredient": "",
         "Dosage form": "",
         "Route(s) of administration": "",
-        "Qty Ordered": None,
-        "Item": None,
-        "UPC#": None,
-        "DIN/NPN": din_match_key or None,
-        "Pack Size": None,
+        "Qty Ordered": "",
+        "Item": "",
+        "UPC#": "",
+        "DIN/NPN": din_match_key or "",
+        "Pack Size": "",
         "Product Description": f"Inspection: {data.get('inspectionType') or ''} - {data.get('activity') or ''}",
-        "Volume Purchases": None,
-        "Min/Mult": None,
-        "Extended Dating": None,
-        "GST": None,
-        "Price": None,
-        "Supplier": None,
-        "Narcotics": None,
-        "picture": None,
-        "Inventory status": None,
+        "Volume Purchases": "",
+        "Min/Mult": "",
+        "Extended Dating": "",
+        "GST": "",
+        "Price": "",
+        "Supplier": "",
+        "Narcotics": "",
+        "picture": "",
+        "Inventory status": "",
     }
     
-    # Add all magi__ fields as None
+    # Add all magi__ fields as empty strings
     magi_fields = [
         "magi__product_id", "magi__Pro. Name", "magi__STR", "magi__P.S.", "magi__D.F.",
         "magi__MFG", "magi__ACQ.P.", "magi__ORG", "magi__Status", "magi__DIN / NPN number / Local Cod",
@@ -147,7 +147,7 @@ def map_inspection_to_nexara_format(record: Dict) -> Dict[str, Optional[str]]:
     ]
     
     for field in magi_fields:
-        mapped[field] = None
+        mapped[field] = ""
     
     # Store full inspection data as JSON in Product Description or a custom approach
     # Since we don't have a dedicated inspection_data_json field, we'll enhance Product Description
@@ -244,13 +244,13 @@ def sync_new_records(
     # We just need to ensure all rows have the same columns in the same order
     normalized_rows = []
     for row in mapped_rows:
-        # Ensure all columns are present, fill missing ones with None
+        # Ensure all columns are present, fill missing ones with empty string
         normalized_row: Dict[str, Optional[str]] = {}
         for col in columns:
             value = row.get(col)
-            # Keep None as None, convert other values to string
+            # Convert None to empty string, convert other values to string
             if value is None:
-                normalized_row[col] = None
+                normalized_row[col] = ""
             else:
                 normalized_row[col] = str(value)
         normalized_rows.append(normalized_row)
