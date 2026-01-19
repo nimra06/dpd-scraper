@@ -378,6 +378,24 @@ def main() -> None:
             "Please check your GitHub Actions secrets: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY"
         )
     
+    # Validate URL format
+    if not args.supabase_url.startswith("https://") or ".supabase.co" not in args.supabase_url:
+        print(f"WARNING: Supabase URL format looks incorrect: {args.supabase_url[:50]}...", flush=True)
+    
+    # Validate service role key format (should start with eyJ...)
+    if not args.service_role_key.startswith("eyJ"):
+        print(
+            "WARNING: Service role key format looks incorrect. "
+            "It should start with 'eyJ' (JWT token). "
+            "Make sure you're using the 'service_role' key, not the 'anon' key.",
+            flush=True
+        )
+    
+    # Show first few characters for debugging (safe to show)
+    print(f"Supabase URL: {args.supabase_url}", flush=True)
+    print(f"Service Role Key (first 20 chars): {args.service_role_key[:20]}...", flush=True)
+    print(f"Service Role Key length: {len(args.service_role_key)} characters", flush=True)
+    
     # Prepare scraper arguments
     limit: Optional[int] = None if args.all else args.limit
     
