@@ -167,6 +167,14 @@ def fetch_existing_row_uids(
             if exc.response is not None and exc.response.status_code == 404:
                 print("Table does not exist yet, will create it.", flush=True)
                 return set()
+            # Check for authentication errors
+            if exc.response is not None and exc.response.status_code == 401:
+                error_text = exc.response.text if exc.response is not None else str(exc)
+                raise RuntimeError(
+                    f"Authentication failed: Invalid Supabase API key.\n"
+                    f"Please verify your SUPABASE_SERVICE_ROLE_KEY in GitHub Actions secrets.\n"
+                    f"Error: {error_text}"
+                ) from exc
             error_text = exc.response.text if exc.response is not None else str(exc)
             raise RuntimeError(
                 f"Failed fetching existing row_uids: {error_text}"

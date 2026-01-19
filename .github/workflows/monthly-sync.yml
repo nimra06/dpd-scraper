@@ -36,9 +36,11 @@ jobs:
       - name: Upload logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: sync-logs
           path: |
             data/*.json
             data/*.xlsx
           retention-days: 7
+          if-no-files-found: ignore

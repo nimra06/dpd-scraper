@@ -367,7 +367,15 @@ def main() -> None:
     
     if not args.supabase_url or not args.service_role_key:
         sys.exit(
-            "Supabase URL and service role key must be provided via arguments or environment"
+            "ERROR: Supabase URL and service role key must be provided via arguments or environment variables.\n"
+            "Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in GitHub Actions secrets."
+        )
+    
+    # Validate that the keys are not empty strings
+    if args.supabase_url.strip() == "" or args.service_role_key.strip() == "":
+        sys.exit(
+            "ERROR: Supabase URL or service role key is empty.\n"
+            "Please check your GitHub Actions secrets: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY"
         )
     
     # Prepare scraper arguments
