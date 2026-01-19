@@ -436,10 +436,12 @@ def main() -> None:
             
             json_path = Path(json_files[0])
         
-        print(f"Scrape completed. Loading records from {json_path}...", flush=True)
+        elapsed = time_module.time() - start_time
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Scrape completed in {elapsed:.1f}s ({elapsed/60:.1f} minutes)", flush=True)
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Loading records from {json_path}...", flush=True)
         records = load_records_from_json(json_path)
         
-        print(f"Loaded {len(records)} records. Syncing to Supabase...", flush=True)
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Loaded {len(records)} records. Syncing to Supabase...", flush=True)
         sync_new_records(
             records,
             args.supabase_url,
