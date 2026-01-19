@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests openpyxl
+          pip install -r requirements.txt
       
       - name: Run monthly sync
         env:
@@ -30,7 +30,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           cd scripts
-          python run_monthly_sync.py --all
+          python run_monthly_sync.py --all --table-name nexara_all_source
       
       - name: Upload logs on failure
         if: failure()
