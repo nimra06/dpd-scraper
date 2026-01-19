@@ -186,10 +186,21 @@ def records_to_nexara_rows(
         if row_uid not in existing_row_uids:
             new_records.append(record)
     
+    import time as time_module
     print(
-        f"Found {len(records)} total records, "
-        f"{len(new_records)} new records to sync, "
-        f"{len(existing_row_uids)} already in Supabase.",
+        f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] 📊 Summary:",
+        flush=True
+    )
+    print(
+        f"  • Total records scraped: {len(records)}",
+        flush=True
+    )
+    print(
+        f"  • Already in Supabase: {len(existing_row_uids)}",
+        flush=True
+    )
+    print(
+        f"  • New records to insert: {len(new_records)}",
         flush=True
     )
     
@@ -219,7 +230,14 @@ def sync_new_records(
     """
     Sync only new records to Supabase nexara_all_source table.
     """
-    print("Fetching existing row_uids from Supabase...", flush=True)
+    import time as time_module
+    
+    print("=" * 80, flush=True)
+    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Starting Supabase sync process...", flush=True)
+    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Total records scraped: {len(records)}", flush=True)
+    print("=" * 80, flush=True)
+    
+    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Fetching existing row_uids from Supabase...", flush=True)
     existing_row_uids = fetch_existing_row_uids(
         supabase_url,
         service_role_key,
@@ -227,11 +245,15 @@ def sync_new_records(
         source_filter="HC",
     )
     
-    print("Filtering and mapping new records...", flush=True)
+    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Found {len(existing_row_uids)} existing records in Supabase", flush=True)
+    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Filtering and mapping new records...", flush=True)
     mapped_rows, columns = records_to_nexara_rows(records, existing_row_uids)
     
     if not mapped_rows:
-        print("No new records to sync. Exiting.", flush=True)
+        print("=" * 80, flush=True)
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] No new records to sync.", flush=True)
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] All {len(records)} scraped records already exist in Supabase.", flush=True)
+        print("=" * 80, flush=True)
         return
     
     # Note: We don't create the table automatically for nexara_all_source
@@ -242,6 +264,7 @@ def sync_new_records(
     # Convert to format suitable for insertion (ensure all columns are present)
     # The mapped_rows already have the correct format (Dict[str, Optional[str]])
     # We just need to ensure all rows have the same columns in the same order
+    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Preparing {len(mapped_rows)} new records for insertion...", flush=True)
     normalized_rows = []
     for row in mapped_rows:
         # Ensure all columns are present, fill missing ones with empty string
@@ -255,7 +278,12 @@ def sync_new_records(
                 normalized_row[col] = str(value)
         normalized_rows.append(normalized_row)
     
-    print(f"Inserting {len(normalized_rows)} new records to Supabase...", flush=True)
+    print("=" * 80, flush=True)
+    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Inserting {len(normalized_rows)} new records to Supabase...", flush=True)
+    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Using batch size: {batch_size}", flush=True)
+    print("=" * 80, flush=True)
+    
+    sync_start_time = time_module.time()
     insert_batches(
         supabase_url,
         service_role_key,
@@ -263,7 +291,12 @@ def sync_new_records(
         normalized_rows,
         batch_size=batch_size,
     )
-    print(f"Successfully synced {len(normalized_rows)} new records to Supabase.", flush=True)
+    
+    sync_elapsed = time_module.time() - sync_start_time
+    print("=" * 80, flush=True)
+    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] ✅ Successfully synced {len(normalized_rows)} new records to Supabase!", flush=True)
+    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Insertion took {sync_elapsed:.1f}s ({sync_elapsed/60:.1f} minutes)", flush=True)
+    print("=" * 80, flush=True)
 
 
 def parse_args() -> argparse.Namespace:
@@ -345,7 +378,9 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     
     try:
+        print("=" * 80, flush=True)
         print("Starting scrape...", flush=True)
+        print("=" * 80, flush=True)
         
         # Import scraper functions
         from scrape_drug_inspections import (
@@ -353,9 +388,12 @@ def main() -> None:
             collect_records,
         )
         import requests
+        import time as time_module
         
+        start_time = time_module.time()
         listing_cache = output_dir / "drug_inspections_listing.json"
         
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Fetching listing rows...", flush=True)
         with requests.Session() as session:
             listing_rows = retrieve_listing_rows(
                 session=session,
@@ -371,7 +409,10 @@ def main() -> None:
             if total == 0:
                 raise ScraperError("No listing rows returned from search endpoint")
             
-            print(f"Found {total} listing rows. Fetching details...", flush=True)
+            elapsed = time_module.time() - start_time
+            print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Found {total} listing rows (took {elapsed:.1f}s)", flush=True)
+            print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Starting to fetch details for each inspection...", flush=True)
+            print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] This may take a while. Progress will be shown every {args.status_interval} records.", flush=True)
             
             # Use a temporary output prefix
             output_prefix = output_dir / "temp_scrape"
@@ -407,7 +448,11 @@ def main() -> None:
             batch_size=args.batch_size,
         )
         
-        print("Monthly sync completed successfully!", flush=True)
+        total_elapsed = time_module.time() - start_time
+        print("=" * 80, flush=True)
+        print(f"Monthly sync completed successfully!", flush=True)
+        print(f"Total time: {total_elapsed:.1f}s ({total_elapsed/60:.1f} minutes)", flush=True)
+        print("=" * 80, flush=True)
         
     except ScraperError as exc:
         sys.exit(f"Scraper failed: {exc}")

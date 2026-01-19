@@ -256,18 +256,33 @@ def insert_batches(
     }
     total = 0
     start_time = time.time()
-    for batch in chunked(rows, batch_size):
+    total_rows = sum(1 for _ in chunked(rows, batch_size))
+    rows_list = list(rows)  # Convert to list to get length
+    total_rows = len(rows_list)
+    
+    # Re-chunk for insertion
+    batch_num = 0
+    for batch in chunked(iter(rows_list), batch_size):
+        batch_num += 1
         response = requests.post(endpoint, headers=headers, json=batch, timeout=60)
         try:
             response.raise_for_status()
         except requests.HTTPError as exc:
             raise RuntimeError(
-                f"Failed inserting batch at offset {total}: {response.text}"
+                f"Failed inserting batch {batch_num} at offset {total}: {response.text}"
             ) from exc
         total += len(batch)
         elapsed = time.time() - start_time
-        print(f"Inserted {total} rows ({len(batch)} in last batch, {elapsed:.1f}s elapsed)", flush=True)
-    print("All rows inserted.", flush=True)
+        rate = total / elapsed if elapsed > 0 else 0
+        remaining = total_rows - total
+        eta = remaining / rate if rate > 0 else 0
+        print(
+            f"  ✓ Batch {batch_num}: Inserted {total}/{total_rows} rows "
+            f"({len(batch)} in this batch, {elapsed:.1f}s elapsed, "
+            f"{rate:.1f} rows/s, ~{eta:.0f}s remaining)",
+            flush=True
+        )
+    print(f"✅ All {total} rows inserted successfully!", flush=True)
 
 
 def parse_args() -> argparse.Namespace:
