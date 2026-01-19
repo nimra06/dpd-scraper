@@ -75,10 +75,16 @@ def delete_hc_records_today(
     
     if dry_run:
         print("DRY RUN: Would delete these records, but --dry-run is set.", flush=True)
+        if isinstance(records, list) and len(filtered_records) > 0:
+            print("Sample records that would be deleted:", flush=True)
+            for i, record in enumerate(filtered_records[:5], 1):
+                print(f"  {i}. row_uid: {record.get('row_uid')}, created_at: {record.get('created_at')}", flush=True)
+            if len(filtered_records) > 5:
+                print(f"  ... and {len(filtered_records) - 5} more", flush=True)
         return
     
     # Confirm deletion
-    print(f"\n⚠️  WARNING: This will delete {count} records where source='HC'", flush=True)
+    print(f"\n⚠️  WARNING: This will delete {count} records where source='HC' and created_at='{date_str}'", flush=True)
     print("Type 'DELETE' to confirm: ", end="", flush=True)
     confirmation = input().strip()
     
@@ -86,68 +92,49 @@ def delete_hc_records_today(
         print("Deletion cancelled.", flush=True)
         return
     
-    # Delete records in batches (Supabase has limits)
-    deleted_count = 0
-    batch_size = 1000
-    offset = 0
+    # Delete by source='HC' and created_at date using SQL RPC endpoint
+    # Delete records created on the target date (from 00:00:00 to 23:59:59)
+    delete_sql = (
+        f'DELETE FROM public."{table_name}" '
+        f'WHERE "source" = \'HC\' '
+        f'AND DATE("created_at") = \'{date_str}\';'
+    )
     
-    while True:
-        # Get batch of row_uids
-        params = {
-            "source": "eq.HC",
-            "select": "row_uid",
-            "limit": batch_size,
-            "offset": offset,
-        }
-        
-        response = requests.get(endpoint, headers=headers, params=params, timeout=60)
-        response.raise_for_status()
-        batch = response.json()
-        
-        if not batch or not isinstance(batch, list) or len(batch) == 0:
-            break
-        
-        # Extract row_uids
-        row_uids = [record.get("row_uid") for record in batch if record.get("row_uid")]
-        
-        if not row_uids:
-            break
-        
-        # Delete by source='HC' using a single delete request
-        # Use the SQL RPC endpoint for bulk delete
-        delete_sql = f'DELETE FROM public."{table_name}" WHERE "source" = \'HC\';'
-        sql_endpoint = f"{supabase_url.rstrip('/')}/rest/v1/rpc/sql"
-        sql_headers = {
-            "apikey": service_role_key,
-            "Authorization": f"Bearer {service_role_key}",
-            "Content-Type": "application/json",
-        }
-        
-        delete_response = requests.post(
-            sql_endpoint,
-            headers=sql_headers,
-            json={"query": delete_sql},
-            timeout=60
-        )
-        delete_response.raise_for_status()
-        
-        # Verify deletion
-        verify_response = requests.get(endpoint, headers=headers, params=count_params, timeout=60)
-        verify_response.raise_for_status()
-        remaining = verify_response.json()
-        remaining_count = len(remaining) if isinstance(remaining, list) else 0
-        
-        deleted_count = count - remaining_count
-        print(f"✅ Successfully deleted {deleted_count} HC records created on {date_str}.", flush=True)
-        if remaining_count > 0:
-            print(f"Note: {remaining_count} HC records from other dates remain in the database.", flush=True)
-        
-        if len(batch) < batch_size:
-            break
-        
-        offset += batch_size
+    sql_endpoint = f"{supabase_url.rstrip('/')}/rest/v1/rpc/sql"
+    sql_headers = {
+        "apikey": service_role_key,
+        "Authorization": f"Bearer {service_role_key}",
+        "Content-Type": "application/json",
+    }
     
-    print(f"✅ Successfully deleted {deleted_count} HC records from {table_name}.", flush=True)
+    print(f"Executing delete query for records created on {date_str}...", flush=True)
+    delete_response = requests.post(
+        sql_endpoint,
+        headers=sql_headers,
+        json={"query": delete_sql},
+        timeout=60
+    )
+    delete_response.raise_for_status()
+    
+    # Verify deletion
+    verify_response = requests.get(endpoint, headers=headers, params=count_params, timeout=60)
+    verify_response.raise_for_status()
+    remaining = verify_response.json()
+    
+    # Filter remaining records to only those from target date
+    if isinstance(remaining, list):
+        remaining_today = [
+            r for r in remaining
+            if r.get("created_at") and r["created_at"].startswith(date_str)
+        ]
+        remaining_count = len(remaining_today)
+    else:
+        remaining_count = 0
+    
+    deleted_count = count - remaining_count
+    print(f"✅ Successfully deleted {deleted_count} HC records created on {date_str}.", flush=True)
+    if remaining_count > 0:
+        print(f"Warning: {remaining_count} HC records from {date_str} still remain (deletion may have failed).", flush=True)
 
 
 def parse_args() -> argparse.Namespace:
