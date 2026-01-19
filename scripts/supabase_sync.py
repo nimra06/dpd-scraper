@@ -256,9 +256,13 @@ def insert_batches(
     }
     total = 0
     start_time = time.time()
-    total_rows = sum(1 for _ in chunked(rows, batch_size))
-    rows_list = list(rows)  # Convert to list to get length
+    # Convert to list to get total count and allow iteration
+    rows_list = list(rows)
     total_rows = len(rows_list)
+    
+    print(f"  Total rows to insert: {total_rows}", flush=True)
+    print(f"  Batch size: {batch_size}", flush=True)
+    print(f"  Estimated batches: {(total_rows + batch_size - 1) // batch_size}", flush=True)
     
     # Re-chunk for insertion
     batch_num = 0
