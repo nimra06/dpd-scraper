@@ -56,8 +56,8 @@ def map_inspection_to_nexara_format(record: Dict) -> Dict[str, Optional[str]]:
     # Use detail data if available, otherwise fall back to listing
     data = detail if detail else listing
     
-    # Create row_uid in format: HC_INSPECTIONS:{inspection_number}
-    row_uid = f"HC_INSPECTIONS:{inspection_number}"
+    # Create row_uid in format: HC:{inspection_number}
+    row_uid = f"HC:{inspection_number}"
     
     # Extract DIN if available (might be in various fields)
     din_match_key = None
@@ -69,10 +69,10 @@ def map_inspection_to_nexara_format(record: Dict) -> Dict[str, Optional[str]]:
                 break
     
     # Map inspection data to nexara_all_source columns
-    # match_bucket will be computed by the database or can be set to source if not computed
+    # Only HC columns will be populated, KF and MAGI columns will be null
     mapped = {
-        "match_bucket": "HC_INSPECTIONS",  # Will be updated if matched with other sources
-        "source": "HC_INSPECTIONS",
+        "match_bucket": "HC only",
+        "source": "HC",
         "row_uid": row_uid,
         "din_match_key": din_match_key or "",
         "Status": data.get("ratingDesc") or data.get("rating") or "",
@@ -182,7 +182,7 @@ def records_to_nexara_rows(
     new_records = []
     for record in records:
         inspection_number = record.get("inspection_number")
-        row_uid = f"HC_INSPECTIONS:{inspection_number}"
+        row_uid = f"HC:{inspection_number}"
         if row_uid not in existing_row_uids:
             new_records.append(record)
     
@@ -224,7 +224,7 @@ def sync_new_records(
         supabase_url,
         service_role_key,
         table_name,
-        source_filter="HC_INSPECTIONS",
+        source_filter="HC",
     )
     
     print("Filtering and mapping new records...", flush=True)
