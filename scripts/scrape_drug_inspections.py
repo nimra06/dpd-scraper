@@ -362,9 +362,14 @@ def collect_records(
 
     outputs: Dict[str, List[str]] = {}
     records: List[Dict[str, Any]] = []
+    start_time = time.time()
 
     print(
         f"Starting scrape for {total} records with checkpoints at {thresholds}",
+        flush=True,
+    )
+    print(
+        f"Estimated time: ~{total * 0.5 / 60:.1f} minutes (assuming 0.5s per record)",
         flush=True,
     )
 
@@ -404,8 +409,16 @@ def collect_records(
         records.append(combined)
 
         if status_interval and (idx % status_interval == 0 or idx == total):
+            elapsed = time.time() - start_time if 'start_time' in locals() else 0
+            if not 'start_time' in locals():
+                start_time = time.time()
+                elapsed = 0
+            rate = idx / elapsed if elapsed > 0 else 0
+            remaining = total - idx
+            eta = remaining / rate if rate > 0 else 0
             print(
-                f"[{idx}/{total}] Processed inspection {ins_number}",
+                f"[{idx}/{total}] Processed inspection {ins_number} "
+                f"({elapsed:.1f}s elapsed, {rate:.2f} records/s, ~{eta/60:.1f} min remaining)",
                 flush=True,
             )
 

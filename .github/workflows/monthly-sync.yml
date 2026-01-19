@@ -9,6 +9,7 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 720  # 12 hours timeout (safety limit, will stop naturally when scraping completes)
     
     steps:
       - name: Checkout repository
@@ -30,7 +31,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           cd scripts
-          python run_monthly_sync.py --all --table-name nexara_all_source
+          python run_monthly_sync.py --all --table-name nexara_all_source --status-interval 25
       
       - name: Upload logs on failure
         if: failure()
