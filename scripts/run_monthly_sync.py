@@ -60,13 +60,17 @@ def map_inspection_to_nexara_format(record: Dict) -> Dict[str, Optional[str]]:
     row_uid = f"HC:{inspection_number}"
     
     # Extract DIN if available (might be in various fields)
+    # Note: Inspection records typically don't have DINs - they're about manufacturing facilities
     din_match_key = None
     if isinstance(data, dict):
         # Try to find DIN in various possible fields
-        for key in ["din", "DIN", "licenseNumber", "registrationNumber"]:
+        for key in ["din", "DIN", "licenseNumber", "registrationNumber", "referenceNumber"]:
             if key in data and data[key]:
-                din_match_key = str(data[key]).strip()
-                break
+                value = str(data[key]).strip()
+                # Skip "Not applicable" or empty values
+                if value and value.lower() not in ["not applicable", "n/a", "na", ""]:
+                    din_match_key = value
+                    break
     
     # Map inspection data to nexara_all_source columns
     # Only HC columns will be populated, KF and MAGI columns will be null
@@ -79,7 +83,7 @@ def map_inspection_to_nexara_format(record: Dict) -> Dict[str, Optional[str]]:
         "DIN URL": "",
         "DIN": din_match_key or "",
         "Company": data.get("establishmentName") or "",
-        "Product": "",
+        "Product": data.get("site") or "",  # Site name might be useful
         "Class": data.get("establishmentType") or "",
         "PM See footnote1": "",
         "Schedule": "",
@@ -108,7 +112,12 @@ def map_inspection_to_nexara_format(record: Dict) -> Dict[str, Optional[str]]:
         "UPC#": "",
         "DIN/NPN": din_match_key or "",
         "Pack Size": "",
-        "Product Description": f"Inspection: {data.get('inspectionType') or ''} - {data.get('activity') or ''}",
+        "Product Description": (
+            f"Inspection Type: {data.get('inspectionType') or 'N/A'}, "
+            f"Activity: {data.get('activity') or 'N/A'}, "
+            f"Certificate: {data.get('certificateType') or 'N/A'}, "
+            f"Reference: {data.get('referenceNumber') or 'N/A'}"
+        ),
         "Volume Purchases": "",
         "Min/Mult": "",
         "Extended Dating": "",
