@@ -24,8 +24,9 @@ from pathlib import Path
 scripts_dir = Path(__file__).parent
 sys.path.insert(0, str(scripts_dir))
 
-# Import from scrape_drug_inspections
-from scrape_drug_inspections import ScraperError
+# Define ScraperError locally
+class ScraperError(RuntimeError):
+    """Domain specific error raised for scraping issues."""
 
 # Import from supabase_sync
 from supabase_sync import (
@@ -36,88 +37,61 @@ from supabase_sync import (
 )
 
 
-def load_records_from_json(json_path: Path) -> List[Dict]:
-    """Load records from JSON file."""
-    with json_path.open("r", encoding="utf-8") as fh:
-        data = json.load(fh)
-    if not isinstance(data, list):
-        raise ValueError(f"JSON root must be a list: {json_path}")
-    return data
 
 
-def map_inspection_to_nexara_format(record: Dict) -> Dict[str, Optional[str]]:
+def map_dpd_product_to_nexara_format(product: Dict[str, str]) -> Dict[str, Optional[str]]:
     """
-    Map inspection record to nexara_all_source table format.
+    Map DPD product record to nexara_all_source table format.
     """
-    inspection_number = record.get("inspection_number")
-    listing = record.get("listing", {})
-    detail = record.get("detail", {})
+    din = product.get("DIN", "").strip()
+    if not din:
+        # Skip records without DIN
+        return {}
     
-    # Use detail data if available, otherwise fall back to listing
-    data = detail if detail else listing
+    # Create row_uid in format: HC:{DIN}
+    row_uid = f"HC:{din}"
     
-    # Create row_uid in format: HC:{inspection_number}
-    row_uid = f"HC:{inspection_number}"
-    
-    # Extract DIN if available (might be in various fields)
-    # Note: Inspection records typically don't have DINs - they're about manufacturing facilities
-    din_match_key = None
-    if isinstance(data, dict):
-        # Try to find DIN in various possible fields
-        for key in ["din", "DIN", "licenseNumber", "registrationNumber", "referenceNumber"]:
-            if key in data and data[key]:
-                value = str(data[key]).strip()
-                # Skip "Not applicable" or empty values
-                if value and value.lower() not in ["not applicable", "n/a", "na", ""]:
-                    din_match_key = value
-                    break
-    
-    # Map inspection data to nexara_all_source columns
-    # Only HC columns will be populated, KF and MAGI columns will be null
+    # Map DPD product data to nexara_all_source columns
+    # Only HC columns will be populated, KF and MAGI columns will be empty
     mapped = {
-        "match_bucket": "HC only",
+        "match_bucket": "HC",
         "source": "HC",
         "row_uid": row_uid,
-        "din_match_key": din_match_key or "",
-        "Status": data.get("ratingDesc") or data.get("rating") or "",
-        "DIN URL": "",
-        "DIN": din_match_key or "",
-        "Company": data.get("establishmentName") or "",
-        "Product": data.get("site") or "",  # Site name might be useful
-        "Class": data.get("establishmentType") or "",
-        "PM See footnote1": "",
-        "Schedule": "",
-        "# See footnote2": "",
-        "A.I. name See footnote3": "",
-        "Strength": "",
-        "Current status date": data.get("inspectionEndDate_iso") or data.get("inspectionEndDate") or "",
-        "Original market date": data.get("inspectionStartDate_iso") or data.get("inspectionStartDate") or "",
-        "Address": data.get("street") or "",
-        "City": data.get("city") or "",
-        "state": data.get("province") or "",
-        "Country": data.get("country") or "",
-        "Zipcode": data.get("postalCode") or "",
-        "Number of active ingredient(s)": "",
-        "Biosimilar Biologic Drug": "",
-        "American Hospital Formulary Service (AHFS)": "",
-        "Anatomical Therapeutic Chemical (ATC)": "",
-        "Active ingredient group (AIG) number": "",
-        "Labelling": "",
-        "Product Monograph/Veterinary Date": "",
-        "List of active ingredient": "",
-        "Dosage form": "",
-        "Route(s) of administration": "",
+        "din_match_key": din,
+        "Status": product.get("Status", ""),
+        "DIN URL": product.get("DIN URL", ""),
+        "DIN": din,
+        "Company": product.get("Company", ""),
+        "Product": product.get("Product", ""),
+        "Class": product.get("Class", ""),
+        "PM See footnote1": product.get("PM See footnote1", ""),
+        "Schedule": product.get("Schedule", ""),
+        "# See footnote2": product.get("# See footnote2", ""),
+        "A.I. name See footnote3": product.get("A.I. name See footnote3", ""),
+        "Strength": product.get("Strength", ""),
+        "Current status date": product.get("Current status date", ""),
+        "Original market date": product.get("Original market date", ""),
+        "Address": product.get("Address", ""),
+        "City": product.get("City", ""),
+        "state": product.get("state", ""),
+        "Country": product.get("Country", ""),
+        "Zipcode": product.get("Zipcode", ""),
+        "Number of active ingredient(s)": product.get("Number of active ingredient(s)", ""),
+        "Biosimilar Biologic Drug": product.get("Biosimilar Biologic Drug", ""),
+        "American Hospital Formulary Service (AHFS)": product.get("American Hospital Formulary Service (AHFS)", ""),
+        "Anatomical Therapeutic Chemical (ATC)": product.get("Anatomical Therapeutic Chemical (ATC)", ""),
+        "Active ingredient group (AIG) number": product.get("Active ingredient group (AIG) number", ""),
+        "Labelling": product.get("Labelling", ""),
+        "Product Monograph/Veterinary Date": product.get("Product Monograph/Veterinary Date", ""),
+        "List of active ingredient": product.get("List of active ingredient", ""),
+        "Dosage form": product.get("Dosage form", ""),
+        "Route(s) of administration": product.get("Route(s) of administration", ""),
         "Qty Ordered": "",
         "Item": "",
         "UPC#": "",
-        "DIN/NPN": din_match_key or "",
+        "DIN/NPN": din,
         "Pack Size": "",
-        "Product Description": (
-            f"Inspection Type: {data.get('inspectionType') or 'N/A'}, "
-            f"Activity: {data.get('activity') or 'N/A'}, "
-            f"Certificate: {data.get('certificateType') or 'N/A'}, "
-            f"Reference: {data.get('referenceNumber') or 'N/A'}"
-        ),
+        "Product Description": "",
         "Volume Purchases": "",
         "Min/Mult": "",
         "Extended Dating": "",
@@ -158,42 +132,25 @@ def map_inspection_to_nexara_format(record: Dict) -> Dict[str, Optional[str]]:
     for field in magi_fields:
         mapped[field] = ""
     
-    # Store full inspection data as JSON in Product Description or a custom approach
-    # Since we don't have a dedicated inspection_data_json field, we'll enhance Product Description
-    inspection_summary = {
-        "inspection_number": inspection_number,
-        "inspection_type": data.get("inspectionType"),
-        "activity": data.get("activity"),
-        "rating": data.get("rating"),
-        "rating_desc": data.get("ratingDesc"),
-        "inspection_start": data.get("inspectionStartDate_iso") or data.get("inspectionStartDate"),
-        "inspection_end": data.get("inspectionEndDate_iso") or data.get("inspectionEndDate"),
-        "certificate_type": data.get("certificateType"),
-        "reference_number": data.get("referenceNumber"),
-    }
-    # Store as JSON in Product Description field (append to existing)
-    if mapped["Product Description"]:
-        mapped["Product Description"] += f" | Data: {json.dumps(inspection_summary, ensure_ascii=False)}"
-    else:
-        mapped["Product Description"] = json.dumps(inspection_summary, ensure_ascii=False)
-    
     return mapped
 
 
-def records_to_nexara_rows(
-    records: List[Dict],
+def products_to_nexara_rows(
+    products: List[Dict[str, str]],
     existing_row_uids: Set[str],
 ) -> tuple[List[Dict[str, Optional[str]]], List[str]]:
     """
-    Convert inspection records to nexara_all_source format.
+    Convert DPD product records to nexara_all_source format.
     Only includes records that are not already in Supabase (by row_uid).
     """
-    new_records = []
-    for record in records:
-        inspection_number = record.get("inspection_number")
-        row_uid = f"HC:{inspection_number}"
+    new_products = []
+    for product in products:
+        din = product.get("DIN", "").strip()
+        if not din:
+            continue  # Skip products without DIN
+        row_uid = f"HC:{din}"
         if row_uid not in existing_row_uids:
-            new_records.append(record)
+            new_products.append(product)
     
     import time as time_module
     print(
@@ -201,7 +158,7 @@ def records_to_nexara_rows(
         flush=True
     )
     print(
-        f"  • Total records scraped: {len(records)}",
+        f"  • Total products scraped: {len(products)}",
         flush=True
     )
     print(
@@ -209,16 +166,20 @@ def records_to_nexara_rows(
         flush=True
     )
     print(
-        f"  • New records to insert: {len(new_records)}",
+        f"  • New products to insert: {len(new_products)}",
         flush=True
     )
     
-    if not new_records:
-        print("No new records to sync.", flush=True)
+    if not new_products:
+        print("No new products to sync.", flush=True)
         return [], []
     
     # Map to nexara format
-    mapped_rows = [map_inspection_to_nexara_format(record) for record in new_records]
+    mapped_rows = []
+    for product in new_products:
+        mapped = map_dpd_product_to_nexara_format(product)
+        if mapped:  # Only add if mapping succeeded (has DIN)
+            mapped_rows.append(mapped)
     
     # Get all column names from the first record (all should have same structure)
     if mapped_rows:
@@ -230,20 +191,20 @@ def records_to_nexara_rows(
 
 
 def sync_new_records(
-    records: List[Dict],
+    products: List[Dict[str, str]],
     supabase_url: str,
     service_role_key: str,
     table_name: str,
     batch_size: int = 500,
 ) -> None:
     """
-    Sync only new records to Supabase nexara_all_source table.
+    Sync only new product records to Supabase nexara_all_source table.
     """
     import time as time_module
     
     print("=" * 80, flush=True)
     print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Starting Supabase sync process...", flush=True)
-    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Total records scraped: {len(records)}", flush=True)
+    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Total products scraped: {len(products)}", flush=True)
     print("=" * 80, flush=True)
     
     print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Fetching existing row_uids from Supabase...", flush=True)
@@ -255,8 +216,8 @@ def sync_new_records(
     )
     
     print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Found {len(existing_row_uids)} existing records in Supabase", flush=True)
-    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Filtering and mapping new records...", flush=True)
-    mapped_rows, columns = records_to_nexara_rows(records, existing_row_uids)
+    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Filtering and mapping new products...", flush=True)
+    mapped_rows, columns = products_to_nexara_rows(products, existing_row_uids)
     
     if not mapped_rows:
         print("=" * 80, flush=True)
@@ -414,71 +375,39 @@ def main() -> None:
     
     try:
         print("=" * 80, flush=True)
-        print("Starting scrape...", flush=True)
+        print("Starting DPD product scrape...", flush=True)
         print("=" * 80, flush=True)
         
-        # Import scraper functions
-        from scrape_drug_inspections import (
-            retrieve_listing_rows,
-            collect_records,
-        )
-        import requests
+        # Import DPD scraper
         import time as time_module
+        from dpd_scraper.dpd_scraper import run_full_scrape
         
         start_time = time_module.time()
-        listing_cache = output_dir / "drug_inspections_listing.json"
         
-        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Fetching listing rows...", flush=True)
-        with requests.Session() as session:
-            listing_rows = retrieve_listing_rows(
-                session=session,
-                limit=limit,
-                cache_path=listing_cache,
-                max_retries=args.max_retries,
-                retry_delay=args.retry_delay,
-                stream_timeout=(10.0, 300.0),
-                stream_chunk_size=65536,
-            )
-            
-            total = len(listing_rows)
-            if total == 0:
-                raise ScraperError("No listing rows returned from search endpoint")
-            
-            elapsed = time_module.time() - start_time
-            print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Found {total} listing rows (took {elapsed:.1f}s)", flush=True)
-            print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Starting to fetch details for each inspection...", flush=True)
-            print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] This may take a while. Progress will be shown every {args.status_interval} records.", flush=True)
-            
-            # Use a temporary output prefix
-            output_prefix = output_dir / "temp_scrape"
-            
-            thresholds = [total]  # Single batch
-            outputs = collect_records(
-                session=session,
-                listing_rows=listing_rows,
-                output_prefix=output_prefix,
-                write_json=True,
-                thresholds=thresholds,
-                status_interval=args.status_interval,
-                max_retries=args.max_retries,
-                retry_delay=args.retry_delay,
-            )
-            
-            # Get the JSON file path
-            json_files = outputs.get("json", [])
-            if not json_files:
-                raise ScraperError("No JSON output file generated")
-            
-            json_path = Path(json_files[0])
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Starting DPD scrape (this may take a while)...", flush=True)
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Fetching all products from Health Canada Drug Product Database...", flush=True)
+        
+        # Run the DPD scraper
+        # Set max_rows to limit if provided, otherwise 0 = no limit (all products)
+        max_rows = limit if limit else 0
+        products, meta = run_full_scrape(
+            max_depth=1,
+            target_min_rows=1000,  # Minimum rows to collect
+            enrich_flush_every=50,
+            request_sleep=0.05,  # Small delay between requests
+            max_rows=max_rows,
+        )
         
         elapsed = time_module.time() - start_time
         print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Scrape completed in {elapsed:.1f}s ({elapsed/60:.1f} minutes)", flush=True)
-        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Loading records from {json_path}...", flush=True)
-        records = load_records_from_json(json_path)
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Scraped {len(products)} products", flush=True)
         
-        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Loaded {len(records)} records. Syncing to Supabase...", flush=True)
+        if not products:
+            raise ScraperError("No products scraped from DPD")
+        
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Syncing products to Supabase...", flush=True)
         sync_new_records(
-            records,
+            products,
             args.supabase_url,
             args.service_role_key,
             args.table_name,
