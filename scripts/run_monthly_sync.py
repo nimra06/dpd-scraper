@@ -24,6 +24,10 @@ from pathlib import Path
 scripts_dir = Path(__file__).parent
 sys.path.insert(0, str(scripts_dir))
 
+# Add parent directory to path so we can import dpd_scraper
+parent_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(parent_dir))
+
 # Define ScraperError locally
 class ScraperError(RuntimeError):
     """Domain specific error raised for scraping issues."""
