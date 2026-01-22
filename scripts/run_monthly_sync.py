@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import signal
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
@@ -377,6 +378,39 @@ def main() -> None:
     output_dir = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
     
+    # Global variable to store scraped products (for timeout handling)
+    scraped_products: List[Dict[str, str]] = []
+    sync_args = None  # Store sync arguments for timeout handler
+    
+    def timeout_handler(signum, frame):
+        """Handle timeout signal - sync whatever we've scraped so far"""
+        import time as time_module
+        print("=" * 80, flush=True)
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] ⚠️  TIMEOUT DETECTED - Syncing partial results...", flush=True)
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Products scraped so far: {len(scraped_products)}", flush=True)
+        
+        if scraped_products and sync_args:
+            try:
+                print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Syncing {len(scraped_products)} products to Supabase (duplicates will be checked)...", flush=True)
+                sync_new_records(
+                    scraped_products,
+                    sync_args['supabase_url'],
+                    sync_args['service_role_key'],
+                    sync_args['table_name'],
+                    batch_size=sync_args['batch_size'],
+                )
+                print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] ✅ Partial sync completed successfully!", flush=True)
+            except Exception as e:
+                print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] ❌ Error during partial sync: {e}", flush=True)
+        else:
+            print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] No products to sync or sync args not set", flush=True)
+        
+        print("=" * 80, flush=True)
+        sys.exit(0)
+    
+    # Register signal handler for SIGTERM (GitHub Actions sends this on timeout)
+    signal.signal(signal.SIGTERM, timeout_handler)
+    
     try:
         print("=" * 80, flush=True)
         print("Starting DPD product scrape...", flush=True)
@@ -387,11 +421,11 @@ def main() -> None:
         from dpd_scraper.dpd_scraper import run_full_scrape
         
         start_time = time_module.time()
-        # Set maximum scrape time to 5 hours (leaving 1 hour buffer for sync)
-        MAX_SCRAPE_TIME = 5 * 60 * 60  # 5 hours in seconds
+        # Set maximum scrape time to 5.5 hours (leaving 30 minutes buffer for sync)
+        MAX_SCRAPE_TIME = 5.5 * 60 * 60  # 5.5 hours in seconds
         
         print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Starting DPD scrape (this may take a while)...", flush=True)
-        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Maximum scrape time: {MAX_SCRAPE_TIME/3600:.1f} hours", flush=True)
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Maximum scrape time: {MAX_SCRAPE_TIME/3600:.1f} hours (will auto-sync on timeout)", flush=True)
         print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Fetching all products from Health Canada Drug Product Database...", flush=True)
         
         # Run the DPD scraper
@@ -410,10 +444,13 @@ def main() -> None:
         if checkpoint_every > 0:
             print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Checkpoints enabled: saving progress every {checkpoint_every} rows", flush=True)
         
-        # Check elapsed time periodically and stop if we're approaching the limit
-        # Note: The scraper itself doesn't support time limits, so we'll let it run
-        # but the workflow timeout will catch it. The deduplication will ensure
-        # we only sync new products anyway.
+        # Store sync arguments for timeout handler
+        sync_args = {
+            'supabase_url': args.supabase_url,
+            'service_role_key': args.service_role_key,
+            'table_name': args.table_name,
+            'batch_size': args.batch_size,
+        }
         
         products, meta = run_full_scrape(
             max_depth=1,
@@ -422,6 +459,9 @@ def main() -> None:
             request_sleep=request_sleep,  # Optimized for speed
             max_rows=max_rows,
         )
+        
+        # Store products globally for timeout handler
+        scraped_products = products
         
         elapsed = time_module.time() - start_time
         print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Scrape completed in {elapsed:.1f}s ({elapsed/60:.1f} minutes)", flush=True)
