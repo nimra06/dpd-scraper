@@ -9,7 +9,7 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 360  # 6 hours (GitHub Actions free tier maximum)
+    timeout-minutes: 4320  # 3 days (72 hours) - will run until completion or timeout
     
     steps:
       - name: Checkout repository
@@ -29,18 +29,22 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Enable checkpoints to save progress (every 2000 rows)
+          SCRAPER_CHECKPOINT_EVERY_ROWS: 2000
+          SCRAPER_CHECKPOINT_DIR: artifacts/checkpoints
         run: |
           cd scripts
           python run_monthly_sync.py --all --table-name nexara_all_source --status-interval 25
       
-      - name: Upload logs on failure
-        if: failure()
+      - name: Upload checkpoints and logs
+        if: always()  # Upload even on success, in case we need to resume
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: sync-logs
+          name: sync-checkpoints-and-logs
           path: |
+            artifacts/checkpoints/*.csv
             data/*.json
             data/*.xlsx
-          retention-days: 7
+          retention-days: 30  # Keep checkpoints longer for potential resume
           if-no-files-found: ignore

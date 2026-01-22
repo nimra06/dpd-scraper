@@ -403,7 +403,12 @@ def main() -> None:
         request_sleep = 0.02  # Reduced from 0.05 for faster scraping
         enrich_flush_every = 100  # Increased batch size for enrichment
         
+        # Enable checkpoints to save progress (every 2000 rows by default)
+        checkpoint_every = int(os.getenv("SCRAPER_CHECKPOINT_EVERY_ROWS", "2000"))
+        
         print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Scraper settings: request_sleep={request_sleep}s, enrich_batch={enrich_flush_every}", flush=True)
+        if checkpoint_every > 0:
+            print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Checkpoints enabled: saving progress every {checkpoint_every} rows", flush=True)
         
         # Check elapsed time periodically and stop if we're approaching the limit
         # Note: The scraper itself doesn't support time limits, so we'll let it run
