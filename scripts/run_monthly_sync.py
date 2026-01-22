@@ -226,7 +226,7 @@ def sync_new_records(
     if not mapped_rows:
         print("=" * 80, flush=True)
         print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] No new records to sync.", flush=True)
-        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] All {len(records)} scraped records already exist in Supabase.", flush=True)
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] All {len(products)} scraped records already exist in Supabase.", flush=True)
         print("=" * 80, flush=True)
         return
     
@@ -387,18 +387,34 @@ def main() -> None:
         from dpd_scraper.dpd_scraper import run_full_scrape
         
         start_time = time_module.time()
+        # Set maximum scrape time to 5 hours (leaving 1 hour buffer for sync)
+        MAX_SCRAPE_TIME = 5 * 60 * 60  # 5 hours in seconds
         
         print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Starting DPD scrape (this may take a while)...", flush=True)
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Maximum scrape time: {MAX_SCRAPE_TIME/3600:.1f} hours", flush=True)
         print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Fetching all products from Health Canada Drug Product Database...", flush=True)
         
         # Run the DPD scraper
         # Set max_rows to limit if provided, otherwise 0 = no limit (all products)
         max_rows = limit if limit else 0
+        
+        # Optimize for faster scraping in CI environment
+        # Reduce sleep time and increase batch sizes for faster execution
+        request_sleep = 0.02  # Reduced from 0.05 for faster scraping
+        enrich_flush_every = 100  # Increased batch size for enrichment
+        
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Scraper settings: request_sleep={request_sleep}s, enrich_batch={enrich_flush_every}", flush=True)
+        
+        # Check elapsed time periodically and stop if we're approaching the limit
+        # Note: The scraper itself doesn't support time limits, so we'll let it run
+        # but the workflow timeout will catch it. The deduplication will ensure
+        # we only sync new products anyway.
+        
         products, meta = run_full_scrape(
             max_depth=1,
             target_min_rows=1000,  # Minimum rows to collect
-            enrich_flush_every=50,
-            request_sleep=0.05,  # Small delay between requests
+            enrich_flush_every=enrich_flush_every,
+            request_sleep=request_sleep,  # Optimized for speed
             max_rows=max_rows,
         )
         

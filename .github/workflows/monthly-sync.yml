@@ -9,7 +9,7 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 720  # 12 hours timeout (safety limit, will stop naturally when scraping completes)
+    timeout-minutes: 360  # 6 hours (GitHub Actions free tier maximum)
     
     steps:
       - name: Checkout repository
