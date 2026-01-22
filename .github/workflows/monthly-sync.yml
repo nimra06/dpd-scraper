@@ -9,7 +9,8 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 4320  # 3 days (72 hours) - will run until completion or timeout
+    timeout-minutes: 360  # 6 hours (GitHub Actions maximum - cannot be increased)
+    # Note: After first full sync, subsequent runs will be faster as only new products are synced
     
     steps:
       - name: Checkout repository
