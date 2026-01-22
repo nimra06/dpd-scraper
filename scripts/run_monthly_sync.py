@@ -385,15 +385,40 @@ def main() -> None:
     def timeout_handler(signum, frame):
         """Handle timeout signal - sync whatever we've scraped so far"""
         import time as time_module
+        import glob
+        import csv
+        
         print("=" * 80, flush=True)
         print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] ⚠️  TIMEOUT DETECTED - Syncing partial results...", flush=True)
-        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Products scraped so far: {len(scraped_products)}", flush=True)
         
-        if scraped_products and sync_args:
+        products_to_sync = scraped_products.copy() if scraped_products else []
+        
+        # If scraper hasn't finished, try to load from checkpoints
+        if not products_to_sync:
+            checkpoint_dir = os.getenv("SCRAPER_CHECKPOINT_DIR", "artifacts/checkpoints")
+            checkpoint_pattern = os.path.join(checkpoint_dir, "dpd_*.csv")
+            checkpoint_files = glob.glob(checkpoint_pattern)
+            
+            if checkpoint_files:
+                # Get the latest checkpoint file
+                latest_checkpoint = max(checkpoint_files, key=os.path.getmtime)
+                print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Loading products from latest checkpoint: {latest_checkpoint}", flush=True)
+                
+                try:
+                    with open(latest_checkpoint, 'r', encoding='utf-8') as f:
+                        reader = csv.DictReader(f)
+                        products_to_sync = list(reader)
+                    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Loaded {len(products_to_sync)} products from checkpoint", flush=True)
+                except Exception as e:
+                    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Error reading checkpoint: {e}", flush=True)
+        
+        print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Products to sync: {len(products_to_sync)}", flush=True)
+        
+        if products_to_sync and sync_args:
             try:
-                print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Syncing {len(scraped_products)} products to Supabase (duplicates will be checked)...", flush=True)
+                print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Syncing {len(products_to_sync)} products to Supabase (duplicates will be checked)...", flush=True)
                 sync_new_records(
-                    scraped_products,
+                    products_to_sync,
                     sync_args['supabase_url'],
                     sync_args['service_role_key'],
                     sync_args['table_name'],
@@ -402,6 +427,8 @@ def main() -> None:
                 print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] ✅ Partial sync completed successfully!", flush=True)
             except Exception as e:
                 print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] ❌ Error during partial sync: {e}", flush=True)
+                import traceback
+                traceback.print_exc()
         else:
             print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] No products to sync or sync args not set", flush=True)
         
