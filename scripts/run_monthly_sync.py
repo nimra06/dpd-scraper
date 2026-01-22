@@ -378,9 +378,12 @@ def main() -> None:
     output_dir = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Global variable to store scraped products (for timeout handling)
-    scraped_products: List[Dict[str, str]] = []
-    sync_args = None  # Store sync arguments for timeout handler
+    # Global variables to store scraped products (for timeout handling)
+    # Using a dict to avoid UnboundLocalError with nested functions
+    state = {
+        'scraped_products': [],
+        'sync_args': None
+    }
     
     def timeout_handler(signum, frame):
         """Handle timeout signal - sync whatever we've scraped so far"""
@@ -414,15 +417,15 @@ def main() -> None:
         
         print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Products to sync: {len(products_to_sync)}", flush=True)
         
-        if products_to_sync and sync_args:
+        if products_to_sync and state['sync_args']:
             try:
                 print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Syncing {len(products_to_sync)} products to Supabase (duplicates will be checked)...", flush=True)
                 sync_new_records(
                     products_to_sync,
-                    sync_args['supabase_url'],
-                    sync_args['service_role_key'],
-                    sync_args['table_name'],
-                    batch_size=sync_args['batch_size'],
+                    state['sync_args']['supabase_url'],
+                    state['sync_args']['service_role_key'],
+                    state['sync_args']['table_name'],
+                    batch_size=state['sync_args']['batch_size'],
                 )
                 print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] ✅ Partial sync completed successfully!", flush=True)
             except Exception as e:
@@ -472,7 +475,7 @@ def main() -> None:
             print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Checkpoints enabled: saving progress every {checkpoint_every} rows", flush=True)
         
         # Store sync arguments for timeout handler
-        sync_args = {
+        state['sync_args'] = {
             'supabase_url': args.supabase_url,
             'service_role_key': args.service_role_key,
             'table_name': args.table_name,
@@ -487,8 +490,8 @@ def main() -> None:
             max_rows=max_rows,
         )
         
-        # Store products globally for timeout handler
-        scraped_products = products
+        # Store products for timeout handler (in case timeout happens during sync)
+        state['scraped_products'] = products
         
         elapsed = time_module.time() - start_time
         print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Scrape completed in {elapsed:.1f}s ({elapsed/60:.1f} minutes)", flush=True)
