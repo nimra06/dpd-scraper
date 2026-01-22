@@ -394,7 +394,7 @@ def main() -> None:
         print("=" * 80, flush=True)
         print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] ⚠️  TIMEOUT DETECTED - Syncing partial results...", flush=True)
         
-        products_to_sync = scraped_products.copy() if scraped_products else []
+        products_to_sync = state['scraped_products'].copy() if state['scraped_products'] else []
         
         # If scraper hasn't finished, try to load from checkpoints
         if not products_to_sync:
