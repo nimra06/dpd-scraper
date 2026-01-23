@@ -44,23 +44,32 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SCRAPER_CHECKPOINT_DIR: artifacts/checkpoints
         run: |
+          echo "🔄 Attempting to sync partial results from checkpoints..."
           cd scripts
-          python3 << 'EOF'
+          python3 -c "
           import os, glob, csv, sys
           from pathlib import Path
           
-          # Add parent directory to path
-          parent_dir = Path(__file__).parent.parent
+          # Add paths
+          scripts_dir = Path(__file__).parent if '__file__' in globals() else Path('.')
+          parent_dir = scripts_dir.parent
           sys.path.insert(0, str(parent_dir))
-          sys.path.insert(0, str(Path(__file__).parent))
+          sys.path.insert(0, str(scripts_dir))
           
           from supabase_sync import fetch_existing_row_uids
           from run_monthly_sync import sync_new_records
           
-          # Load latest checkpoint
+          # Load latest checkpoint (check both relative and absolute paths)
           checkpoint_dir = os.getenv('SCRAPER_CHECKPOINT_DIR', 'artifacts/checkpoints')
-          checkpoint_pattern = os.path.join('..', checkpoint_dir, 'dpd_*.csv')
-          checkpoint_files = glob.glob(checkpoint_pattern)
+          patterns = [
+              os.path.join('..', checkpoint_dir, 'dpd_*.csv'),
+              os.path.join(checkpoint_dir, 'dpd_*.csv'),
+              os.path.join(parent_dir, checkpoint_dir, 'dpd_*.csv'),
+          ]
+          
+          checkpoint_files = []
+          for pattern in patterns:
+              checkpoint_files.extend(glob.glob(pattern))
           
           if checkpoint_files:
               latest = max(checkpoint_files, key=os.path.getmtime)
@@ -81,7 +90,8 @@ jobs:
               print('✅ Partial sync completed successfully!')
           else:
               print('⚠️  No checkpoint files found - nothing to sync')
-          EOF
+              print(f'   Checked patterns: {patterns}')
+          "
       
       - name: Upload checkpoints and logs
         if: always()  # Upload even on success, in case we need to resume

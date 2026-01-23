@@ -482,6 +482,10 @@ def main() -> None:
             'batch_size': args.batch_size,
         }
         
+        # Run scraper in a way that allows periodic sync
+        # Check time periodically and sync if approaching timeout
+        MAX_SCRAPE_TIME = 5.5 * 60 * 60  # 5.5 hours
+        
         products, meta = run_full_scrape(
             max_depth=1,
             target_min_rows=1000,  # Minimum rows to collect
@@ -489,6 +493,27 @@ def main() -> None:
             request_sleep=request_sleep,  # Optimized for speed
             max_rows=max_rows,
         )
+        
+        # Check if we're approaching timeout and sync what we have
+        elapsed = time_module.time() - start_time
+        if elapsed >= MAX_SCRAPE_TIME:
+            print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] ⚠️  Approaching timeout ({elapsed/3600:.1f}h elapsed), syncing partial results...", flush=True)
+            state['scraped_products'] = products
+            if products and state['sync_args']:
+                try:
+                    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] Syncing {len(products)} products before timeout...", flush=True)
+                    sync_new_records(
+                        products,
+                        state['sync_args']['supabase_url'],
+                        state['sync_args']['service_role_key'],
+                        state['sync_args']['table_name'],
+                        batch_size=state['sync_args']['batch_size'],
+                    )
+                    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] ✅ Partial sync completed before timeout!", flush=True)
+                    # Exit successfully after partial sync
+                    sys.exit(0)
+                except Exception as e:
+                    print(f"[{time_module.strftime('%Y-%m-%d %H:%M:%S')}] ❌ Error during partial sync: {e}", flush=True)
         
         # Store products for timeout handler (in case timeout happens during sync)
         state['scraped_products'] = products
