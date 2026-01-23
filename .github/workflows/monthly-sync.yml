@@ -7,7 +7,7 @@ on:
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
-  sync:
+  scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 360  # 6 hours (GitHub Actions maximum - cannot be increased)
     # Note: After first full sync, subsequent runs will be faster as only new products are synced
@@ -37,19 +37,49 @@ jobs:
           cd scripts
           python run_monthly_sync.py --all --table-name nexara_all_source --status-interval 25
       
-      - name: Sync partial results on timeout
-        if: failure()  # Only run if main step failed (likely timeout)
-        continue-on-error: true  # Don't fail workflow if this step has issues
+      - name: Upload checkpoints and logs
+        if: always()  # Upload even on success or timeout
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: checkpoints
+          path: |
+            artifacts/checkpoints/*.csv
+            data/*.json
+            data/*.xlsx
+          retention-days: 30
+          if-no-files-found: ignore
+  
+  sync-partial:
+    runs-on: ubuntu-latest
+    needs: scrape
+    if: failure()  # Only run if scrape job failed (likely timeout)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Download checkpoints
+        uses: actions/download-artifact@v4
+        with:
+          name: checkpoints
+          path: artifacts/checkpoints
+      
+      - name: Sync partial results from checkpoints
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          SCRAPER_CHECKPOINT_DIR: artifacts/checkpoints
         run: |
-          echo "🔄 Attempting to sync partial results from checkpoints..."
-          echo "Current directory: $(pwd)"
-          echo "Listing checkpoint directory:"
-          ls -la artifacts/checkpoints/ 2>/dev/null || echo "Checkpoint directory not found"
-          
+          echo "🔄 Syncing partial results from checkpoints..."
           cd scripts
           python3 -c "
           import os, glob, csv, sys
@@ -61,40 +91,23 @@ jobs:
           sys.path.insert(0, str(parent_dir))
           sys.path.insert(0, str(scripts_dir))
           
-          try:
-              from supabase_sync import fetch_existing_row_uids
-              from run_monthly_sync import sync_new_records
-          except ImportError as e:
-              print(f'❌ Import error: {e}')
-              sys.exit(1)
+          from run_monthly_sync import sync_new_records
           
-          # Load latest checkpoint (check multiple possible locations)
-          checkpoint_dir = os.getenv('SCRAPER_CHECKPOINT_DIR', 'artifacts/checkpoints')
-          patterns = [
-              os.path.join(parent_dir, checkpoint_dir, 'dpd_*.csv'),
-              os.path.join('..', checkpoint_dir, 'dpd_*.csv'),
-              os.path.join(checkpoint_dir, 'dpd_*.csv'),
-          ]
-          
-          checkpoint_files = []
-          for pattern in patterns:
-              found = glob.glob(pattern)
-              checkpoint_files.extend(found)
-              if found:
-                  print(f'Found {len(found)} files matching: {pattern}')
+          # Find latest checkpoint
+          checkpoint_dir = os.path.join(parent_dir, 'artifacts', 'checkpoints')
+          pattern = os.path.join(checkpoint_dir, 'dpd_*.csv')
+          checkpoint_files = glob.glob(pattern)
           
           if checkpoint_files:
               latest = max(checkpoint_files, key=os.path.getmtime)
               print(f'📦 Loading from checkpoint: {latest}')
-              print(f'   File size: {os.path.getsize(latest)} bytes')
               
               with open(latest, 'r', encoding='utf-8') as f:
                   products = list(csv.DictReader(f))
-              print(f'✅ Loaded {len(products)} products from checkpoint')
+              print(f'✅ Loaded {len(products)} products')
               
               if products:
-                  # Sync to Supabase (duplicates will be checked automatically)
-                  print('🔄 Syncing to Supabase...')
+                  print('🔄 Syncing to Supabase (duplicates will be checked)...')
                   sync_new_records(
                       products,
                       os.getenv('SUPABASE_URL'),
@@ -102,24 +115,7 @@ jobs:
                       'nexara_all_source',
                       batch_size=500
                   )
-                  print('✅ Partial sync completed successfully!')
-              else:
-                  print('⚠️  Checkpoint file is empty')
+                  print('✅ Partial sync completed!')
           else:
-              print('⚠️  No checkpoint files found - nothing to sync')
-              print(f'   Checked patterns: {patterns}')
-              print(f'   Current working directory: {os.getcwd()}')
+              print('⚠️  No checkpoint files found')
           "
-      
-      - name: Upload checkpoints and logs
-        if: always()  # Upload even on success, in case we need to resume
-        uses: actions/upload-artifact@v4
-        continue-on-error: true
-        with:
-          name: sync-checkpoints-and-logs
-          path: |
-            artifacts/checkpoints/*.csv
-            data/*.json
-            data/*.xlsx
-          retention-days: 30  # Keep checkpoints longer for potential resume
-          if-no-files-found: ignore
