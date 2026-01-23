@@ -39,58 +39,76 @@ jobs:
       
       - name: Sync partial results on timeout
         if: failure()  # Only run if main step failed (likely timeout)
+        continue-on-error: true  # Don't fail workflow if this step has issues
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SCRAPER_CHECKPOINT_DIR: artifacts/checkpoints
         run: |
           echo "🔄 Attempting to sync partial results from checkpoints..."
+          echo "Current directory: $(pwd)"
+          echo "Listing checkpoint directory:"
+          ls -la artifacts/checkpoints/ 2>/dev/null || echo "Checkpoint directory not found"
+          
           cd scripts
           python3 -c "
           import os, glob, csv, sys
           from pathlib import Path
           
           # Add paths
-          scripts_dir = Path(__file__).parent if '__file__' in globals() else Path('.')
+          scripts_dir = Path('.').resolve()
           parent_dir = scripts_dir.parent
           sys.path.insert(0, str(parent_dir))
           sys.path.insert(0, str(scripts_dir))
           
-          from supabase_sync import fetch_existing_row_uids
-          from run_monthly_sync import sync_new_records
+          try:
+              from supabase_sync import fetch_existing_row_uids
+              from run_monthly_sync import sync_new_records
+          except ImportError as e:
+              print(f'❌ Import error: {e}')
+              sys.exit(1)
           
-          # Load latest checkpoint (check both relative and absolute paths)
+          # Load latest checkpoint (check multiple possible locations)
           checkpoint_dir = os.getenv('SCRAPER_CHECKPOINT_DIR', 'artifacts/checkpoints')
           patterns = [
+              os.path.join(parent_dir, checkpoint_dir, 'dpd_*.csv'),
               os.path.join('..', checkpoint_dir, 'dpd_*.csv'),
               os.path.join(checkpoint_dir, 'dpd_*.csv'),
-              os.path.join(parent_dir, checkpoint_dir, 'dpd_*.csv'),
           ]
           
           checkpoint_files = []
           for pattern in patterns:
-              checkpoint_files.extend(glob.glob(pattern))
+              found = glob.glob(pattern)
+              checkpoint_files.extend(found)
+              if found:
+                  print(f'Found {len(found)} files matching: {pattern}')
           
           if checkpoint_files:
               latest = max(checkpoint_files, key=os.path.getmtime)
               print(f'📦 Loading from checkpoint: {latest}')
+              print(f'   File size: {os.path.getsize(latest)} bytes')
+              
               with open(latest, 'r', encoding='utf-8') as f:
                   products = list(csv.DictReader(f))
               print(f'✅ Loaded {len(products)} products from checkpoint')
               
-              # Sync to Supabase (duplicates will be checked automatically)
-              print('🔄 Syncing to Supabase...')
-              sync_new_records(
-                  products,
-                  os.getenv('SUPABASE_URL'),
-                  os.getenv('SUPABASE_SERVICE_ROLE_KEY'),
-                  'nexara_all_source',
-                  batch_size=500
-              )
-              print('✅ Partial sync completed successfully!')
+              if products:
+                  # Sync to Supabase (duplicates will be checked automatically)
+                  print('🔄 Syncing to Supabase...')
+                  sync_new_records(
+                      products,
+                      os.getenv('SUPABASE_URL'),
+                      os.getenv('SUPABASE_SERVICE_ROLE_KEY'),
+                      'nexara_all_source',
+                      batch_size=500
+                  )
+                  print('✅ Partial sync completed successfully!')
+              else:
+                  print('⚠️  Checkpoint file is empty')
           else:
               print('⚠️  No checkpoint files found - nothing to sync')
               print(f'   Checked patterns: {patterns}')
+              print(f'   Current working directory: {os.getcwd()}')
           "
       
       - name: Upload checkpoints and logs
