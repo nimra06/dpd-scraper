@@ -39,49 +39,14 @@ jobs:
 
       # Sync partial results when scraper hit time limit (exit 124) or failed
       - name: Sync partial results from checkpoints
-        if: failure()
+        if: steps.scrape.outcome == 'failure'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SCRAPER_CHECKPOINT_DIR: ${{ github.workspace }}/artifacts/checkpoints
         run: |
-          echo "Syncing partial results from checkpoints..."
-          cd scripts
-          python3 -c "
-          import os, glob, csv, sys
-          from pathlib import Path
-
-          scripts_dir = Path('.').resolve()
-          parent = scripts_dir.parent
-          sys.path.insert(0, str(parent))
-          sys.path.insert(0, str(scripts_dir))
-
-          from run_monthly_sync import sync_new_records
-
-          d = parent / 'artifacts' / 'checkpoints'
-          files = list(d.glob('dpd_*.csv')) if d.exists() else []
-          if not files:
-              pat = os.path.join(parent, 'artifacts', 'checkpoints', 'dpd_*.csv')
-              files = glob.glob(pat)
-          if not files:
-              print('No checkpoint files found')
-              sys.exit(0)
-
-          latest = max(files, key=lambda p: os.path.getmtime(str(p)))
-          print('Loading from', latest)
-          with open(str(latest), 'r', encoding='utf-8') as f:
-              products = list(csv.DictReader(f))
-          print('Loaded', len(products), 'products')
-
-          if products:
-              sync_new_records(
-                  products,
-                  os.getenv('SUPABASE_URL'),
-                  os.getenv('SUPABASE_SERVICE_ROLE_KEY'),
-                  'nexara_all_source',
-                  batch_size=500,
-              )
-              print('Partial sync completed')
-          "
+          echo "Scraper failed (likely timeout). Syncing partial results from checkpoints..."
+          python3 scripts/sync_from_checkpoints.py
 
       - name: Upload checkpoints and logs
         if: always()
