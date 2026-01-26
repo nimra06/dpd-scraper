@@ -1,8 +1,10 @@
 name: Monthly Drug Inspection Sync
 
+# Runs on the 1st of every month to scrape latest products from Health Canada DPD
+# and sync only NEW products to Supabase (duplicates skipped by DIN).
 on:
   schedule:
-    - cron: '0 0 1 * *'
+    - cron: '0 0 1 * *'  # 1st of every month, 00:00 UTC
   workflow_dispatch:
 
 jobs:

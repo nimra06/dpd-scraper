@@ -4,10 +4,10 @@ A Python-based scraper for Health Canada's Drug & Health Product inspection reco
 
 ## Features
 
-- **Scraping**: Fetches inspection records from Health Canada's GMP database
-- **Incremental Sync**: Only syncs new records to Supabase (compares with existing data)
-- **Monthly Automation**: Runs automatically on the 1st of every month via GitHub Actions
-- **Manual Trigger**: Can be triggered manually via GitHub Actions workflow_dispatch
+- **Scraping**: Fetches product records from Health Canada's Drug Product Database (DPD)
+- **Monthly goal**: Each run scrapes the latest products from the DPD site; only **new** products (by DIN) are inserted into Supabase—duplicates are skipped
+- **Automation**: Runs automatically on the **1st of every month** at 00:00 UTC via GitHub Actions
+- **Manual trigger**: Can be run manually from the GitHub Actions tab (workflow_dispatch)
 
 ## Setup
 
@@ -66,9 +66,11 @@ python run_monthly_sync.py --all
 
 ### Automated Monthly Run
 
-The GitHub Actions workflow (`.github/workflows/monthly-sync.yml`) is configured to:
-- Run automatically on the 1st of every month at 00:00 UTC
-- Can be manually triggered from the GitHub Actions tab
+The GitHub Actions workflow (`.github/workflows/monthly-sync.yml`):
+- Runs **automatically on the 1st of every month** at 00:00 UTC
+- Scrapes the latest products from the Health Canada DPD site each run
+- Syncs only **new** products to Supabase (existing products by DIN are skipped)
+- Can also be triggered manually from the GitHub Actions tab
 
 ### Options
 
@@ -81,33 +83,29 @@ The GitHub Actions workflow (`.github/workflows/monthly-sync.yml`) is configured
 
 ## How It Works
 
-1. **Scraping Phase**:
-   - Fetches listing data from Health Canada's Drug Inspection API
-   - For each inspection, fetches detailed information
-   - Saves results to JSON format
+1. **Scraping phase**
+   - Fetches product listings from Health Canada's Drug Product Database (DPD)
+   - Enriches each product with detail and saves checkpoints as it goes
+   - Runs up to 5 hours per job; if it times out, partial results are synced from checkpoints
 
-2. **Mapping Phase**:
-   - Transforms inspection records to `nexara_all_source` table format
-   - Sets `source` = "HC_INSPECTIONS"
-   - Creates `row_uid` = "HC_INSPECTIONS:{inspection_number}"
-   - Maps inspection data to available table columns
+2. **Mapping phase**
+   - Maps DPD records into `nexara_all_source` format
+   - Uses `source` = `"HC"` and `row_uid` = `"HC:{DIN}"`
 
-3. **Comparison Phase**:
-   - Fetches all existing `row_uid` values from Supabase (filtered by source="HC_INSPECTIONS")
-   - Compares scraped records with existing records
-   - Filters out duplicates based on `row_uid`
+3. **Deduplication**
+   - Loads existing `row_uid` values from Supabase (source = `"HC"`)
+   - Inserts only products whose `row_uid` is not already present (i.e. **new** products)
 
-4. **Sync Phase**:
-   - Only new records are inserted into `nexara_all_source` table
-   - Uses batch inserts for efficiency
-   - Note: The table must already exist (it won't be auto-created)
+4. **Sync phase**
+   - Batch-inserts only new records into `nexara_all_source`
+   - The table must already exist (it is not created by the script)
 
 ## Scripts
 
-- `scripts/scrape_drug_inspections.py`: Main scraper script
+- `scripts/run_monthly_sync.py`: Main orchestration (scrape + sync to Supabase)
+- `scripts/sync_from_checkpoints.py`: Sync partial results from checkpoints (used when scraper times out)
 - `scripts/supabase_sync.py`: Supabase sync utilities
-- `scripts/run_monthly_sync.py`: Orchestration script (scrape + sync)
-- `scripts/xlsx_to_csv.py`: Utility to convert XLSX to CSV
+- `dpd_scraper/dpd_scraper.py`: DPD site scraper
 
 ## Troubleshooting
 
