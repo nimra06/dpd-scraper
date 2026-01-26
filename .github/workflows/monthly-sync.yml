@@ -27,6 +27,7 @@ jobs:
       # Stop at 5h so we stay under 6h and can run sync + upload
       - name: Run scraper (max 5 hours)
         id: scrape
+        continue-on-error: true  # timeout (124) is expected; sync step will persist partial results
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
